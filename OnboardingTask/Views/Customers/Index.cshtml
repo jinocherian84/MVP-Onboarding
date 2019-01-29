@@ -1,0 +1,79 @@
+﻿@model IEnumerable<OnboardingTask.Entities.Customer>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Customer Details</h2>
+
+<p>
+        @Html.ActionLink("Add New Customer", "Create", null, new { @class = "btn  btn-primary" })
+    
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Address)
+        </th>
+        <th>
+            Action(Edit)
+        </th>
+        <th>
+            Action(Delete)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Address)
+        </td>
+        <td>
+         <!--   <span>
+                        <a href="@Url.Action("Edit",new { id = item.Id })" class="btn  btn-warning btn-sm" id="myModal">
+            <span class="glyphicon glyphicon-edit"></span>
+            Edit
+        </a>
+                </span> -->
+
+
+         <button type="button" class="btn  btn-warning btn-sm"><span class="glyphicon glyphicon-edit"></span> Edit</button>
+            
+
+            <div class="modal fade" id="myModal" role="dialog" data-url='@Url.Action("Edit","Customers")'></div>
+
+            <script type="text/javascript">
+                $(document).ready(function () {
+                    $('.btn  btn-warning btn-sm').click(function () {
+        var url = $('#myModal').data('url');
+                        $.get(url, function (data) {
+
+                            $("#myModal").html(data);
+                            $("#myModal").html('show');
+        });
+    });
+});
+            </script>
+
+
+        </td>
+            <td>
+
+                <span>
+                    <a href="@Url.Action("Delete",new { id = item.Id })" class="btn  btn-danger btn-sm">
+                        <span class="glyphicon glyphicon-trash"></span>
+                        Delete
+                    </a>
+                </span>
+            </td>
+        </tr>
+    }
+
+    </table>
