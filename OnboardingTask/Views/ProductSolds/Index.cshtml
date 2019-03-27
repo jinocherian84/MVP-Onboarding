@@ -6,65 +6,228 @@
 
 <h2>Sales</h2>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            Customer Name
-        </th>
-        <th>
-            Product Name
-        </th>
-        <th>
-           Store Name
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.DateSold)
-        </th>
-        <th>
-            Action(Edit)
-        </th>
-        <th>
-            Action(Delete)
-        </th>
-        <th></th>
-    </tr>
+<div class="container" style="margin-top:2%">
+    <a href="/ProductSolds/Create" class="btn btn-info">Add New Sale Record</a>
+</div>
+<div class="container" style="margin-top:2%">
+    <tr></tr>
+    <table class="table" id="mySalesDataTable">
+        <thead>
+            <tr>
+                <th>Customer Name</th>
+                <th>Product Name</th>
+                <th>Store Name</th>
+                <th>Date Sold</th>
+                <th>Action (Edit)</th>
+                <th>Action (Delete)</th>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Customer.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Product.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Store.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.DateSold)
-        </td>
-        <td>
-            <span>
-                <a href="@Url.Action("Edit",new { id = item.Id })" class="btn  btn-warning btn-sm">
-                    <span class="glyphicon glyphicon-edit"></span>
-                    Edit
-                </a>
-            </span>
+            </tr>
+        <tbody></tbody>
+        </thead>
+    </table>
+</div>
 
-        </td>
-        <td>
+<div class="modal fade" id="mySalesModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <a href="#" class="close" data-dismiss="modal">&times;</a>
+                <h3 class="modal-title">Edit Sales Record</h3>
+            </div>
+            <div class="modal-body" id="mySalesModalBody">
 
-            <span>
-                <a href="@Url.Action("Delete",new { id = item.Id })" class="btn  btn-danger btn-sm">
-                    <span class="glyphicon glyphicon-trash"></span>
-                    Delete
-                </a>
-            </span>
-        </td>
-    </tr>
-}
+            </div>
+            
+        </div>
 
-</table>
+    </div>
+
+</div>
+
+<div class="modal fade" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <a href="#" class="close" data-dismiss="modal">&times;</a>
+                <h3 class="modal-title">Delete Sales Record</h3>
+            </div>
+            <div class="modal-body">
+                <h4>Are you sure ? You want to delete this. </h4>
+
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+                <a href="#" class="btn btn-success" onclick="DeleteSalesRecord()">Confirm</a>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@*hidden field for storing current salesId*@
+<input type="hidden" id="hiddenSalesId" />
+
+<script>
+    $(document).ready(function () {
+
+        GetSalesList();
+    })
+
+    var GetSalesList = function () {
+        $.ajax({
+            type: "GET",
+            url: "/ProductSolds/GetSalesList",
+            success: function (response) {
+                BindDataTable(response);
+            }
+
+        })
+    }
+
+    var BindDataTable = function (response) {
+        if ($.fn.dataTable.isDataTable('#mySalesDataTable')) {
+            $("#mySalesDataTable").DataTable().destroy();
+        }
+        //debugger
+        $("#mySalesDataTable").DataTable({
+            data: response,
+            "aoColumns": [
+                { "mData": "Customer.Name" },
+                { "mData": "Product.Name" },
+                { "mData": "Store.Name" },
+                { "mData": "DateSold" },
+
+                {
+                    "mData": "Id",
+                    "render": function (Id, type, full, meta) {
+                        return '<a href="#" class="btn btn-warning" onClick="EditSalesRecord(' + Id + ')"><i class = "glyphicon glyphicon-edit"> Edit</i></a>'
+                    }
+                },
+                {
+                    "mData": "Id",
+                    "render": function (Id, type, full, meta) {
+                        return '<a href="#" id= "row_' + Id + '" class="btn btn-danger" onClick="ConfirmDelete(' + Id + ')"><i class ="glyphicon glyphicon-trash"> Delete</i></a>'
+                    }
+                }
+            ]
+        });
+    }
+
+</script>
+
+<script>
+
+    var EditSalesRecord = function (Id) {
+
+        var url = "/ProductSolds/EditSales?Id=" + Id;
+
+        $("#mySalesModalBody").load(url, function () {
+
+            $("#mySalesModal").modal("show");
+
+        })
+
+    }
+</script>
+
+
+<script>
+    var ConfirmDelete = function (Id) {
+
+        $("#hiddenSalesId").val(Id);
+        $("#myModal").modal('show');
+
+    }
+
+    var DeleteSalesRecord = function () {
+
+        var salesId = $("#hiddenSalesId").val();
+
+        $.ajax({
+
+            type: "POST",
+            url: "/ProductSolds/DeleteConfirmed",
+            data: { Id: salesId },
+            success: function (result) {
+                if (result == false) {
+                    alert("Failed to delete Sales Record");
+                }
+                else {
+
+                    $("#myModal").modal("hide");
+                    GetSalesList();
+                }
+
+            }
+
+        })
+
+    }
+</script>
+
+
+@*<p>
+        @Html.ActionLink("Create New", "Create")
+    </p>
+    <table class="table">
+        <tr>
+            <th>
+                Customer Name
+            </th>
+            <th>
+                Product Name
+            </th>
+            <th>
+               Store Name
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateSold)
+            </th>
+            <th>
+                Action(Edit)
+            </th>
+            <th>
+                Action(Delete)
+            </th>
+            <th></th>
+        </tr>*@
+
+@*@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Customer.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Product.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Store.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateSold)
+            </td>
+            <td>
+                <span>
+                    <a href="@Url.Action("Edit",new { id = item.Id })" class="btn  btn-warning btn-sm">
+                        <span class="glyphicon glyphicon-edit"></span>
+                        Edit
+                    </a>
+                </span>
+
+            </td>
+            <td>
+
+                <span>
+                    <a href="@Url.Action("Delete",new { id = item.Id })" class="btn  btn-danger btn-sm">
+                        <span class="glyphicon glyphicon-trash"></span>
+                        Delete
+                    </a>
+                </span>
+            </td>
+        </tr>
+    }
+
+    </table>*@

@@ -77,8 +77,8 @@ namespace OnboardingTask.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Name,Address")] Customer customer)
+        
+        public ActionResult EditConfirmed([Bind(Include = "Id,Name,Address")] Customer customer)
         {
             if (ModelState.IsValid)
             {
@@ -105,8 +105,8 @@ namespace OnboardingTask.Controllers
         }
 
         // POST: Customers/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
+        //[HttpPost, ActionName("Delete")]
+       // [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
             Customer customer = db.Customer.Find(id);
@@ -123,5 +123,41 @@ namespace OnboardingTask.Controllers
             }
             base.Dispose(disposing);
         }
+
+        public JsonResult GetCustomerList()
+        {
+            List<Customer> CusList = db.Customer.ToList();
+            return Json(CusList,JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult EditCustomer(int Id)
+        {
+           
+            Customer model = new Customer();
+
+            if (Id > 0)
+            {
+                Customer cust = db.Customer.SingleOrDefault(x => x.Id == Id);
+                model.Id = cust.Id;
+                model.Name = cust.Name;
+                model.Address = cust.Address;
+            }
+            return PartialView("CustView", model);
+        }
+
+        //public JsonResult DeleteCustomer(int Id)
+        //{
+        //    bool result = false;
+        //    Customer cust = db.Customer.SingleOrDefault(x => x.Id == Id);
+        //    if (cust != null)
+        //    {
+        //        db.Customer.Remove(cust);
+        //        db.SaveChanges();
+        //        result = true;
+        //    }
+
+        //    return Json(result, JsonRequestBehavior.AllowGet);
+        //}
+
     }
 }

@@ -17,8 +17,8 @@ namespace OnboardingTask.Controllers
         // GET: ProductSolds
         public ActionResult Index()
         {
-            var productSold = db.ProductSold.Include(p => p.Customer).Include(p => p.Product).Include(p => p.Store);
-            return View(productSold.ToList());
+            //var productSold = db.ProductSold.Include(p => p.Customer).Include(p => p.Product).Include(p => p.Store);
+            return View(db.ProductSold.ToList());
         }
 
         // GET: ProductSolds/Details/5
@@ -65,6 +65,38 @@ namespace OnboardingTask.Controllers
             return View(productSold);
         }
 
+        public ActionResult EditSales(int Id)
+        {
+
+            ProductSold model = new ProductSold();
+            
+            if (Id > 0)
+            {
+                //var productSold = db.ProductSold.Include(p => p.Customer).Include(x => x.Product).Include(y => y.Store);
+                //List<ProductSold> sList = productSold.ToList();
+                ProductSold sale = db.ProductSold
+                                         .Include(x => x.Customer).Include(x => x.Product).Include(x => x.Store)
+                                    //      .Where(i => i.Id == Id)
+                                         .SingleOrDefault(x => x.Id == Id);
+                //ViewBag.CustomerId = new SelectList(db.Customer, "Id", "Name", productSold.CustomerId);
+                //ViewBag.ProductId = new SelectList(db.Product, "Id", "Name", productSold.ProductId);
+                //ViewBag.StoreId = new SelectList(db.Store, "Id", "Name", productSold.StoreId);
+                //ProductSold sale = db.ProductSold.SingleOrDefault(x => x.Id == Id);
+                model.Id = sale.Id;
+                model.ProductId = sale.Product.Id;
+                model.CustomerId = sale.Customer.Id;
+                model.StoreId = sale.Store.Id;
+                model.DateSold = sale.DateSold;
+                //ViewBag.CustomerId = new SelectList(db.Customer, "Id", "Name");
+                //ViewBag.ProductId = new SelectList(db.Product, "Id", "Name");
+                //ViewBag.StoreId = new SelectList(db.Store, "Id", "Name");
+                //ViewBag.DateSold = new SelectList(db.ProductSold, "DateSold", "DateSold");
+                
+            }
+
+            return PartialView("SalesView", model);
+        }
+
         // GET: ProductSolds/Edit/5
         public ActionResult Edit(int? id)
         {
@@ -87,8 +119,8 @@ namespace OnboardingTask.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,ProductId,CustomerId,StoreId,DateSold")] ProductSold productSold)
+        
+        public ActionResult EditConfirmed([Bind(Include = "Id,ProductId,CustomerId,StoreId,DateSold")] ProductSold productSold)
         {
             if (ModelState.IsValid)
             {
@@ -118,8 +150,8 @@ namespace OnboardingTask.Controllers
         }
 
         // POST: ProductSolds/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
+       // [HttpPost]
+        //[ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
             ProductSold productSold = db.ProductSold.Find(id);
@@ -135,6 +167,13 @@ namespace OnboardingTask.Controllers
                 db.Dispose();
             }
             base.Dispose(disposing);
+        }
+
+        public JsonResult GetSalesList()
+        {
+            var productSold = db.ProductSold.Include(p => p.Customer).Include(x => x.Product).Include(y => y.Store);
+            List<ProductSold> SaleList = productSold.ToList();
+            return Json(SaleList, JsonRequestBehavior.AllowGet);
         }
     }
 }
