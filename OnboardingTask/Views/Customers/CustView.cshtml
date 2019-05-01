@@ -1,0 +1,58 @@
+﻿@model OnboardingTask.Entities.Customer
+
+
+<form id="myForm">
+    <div class="form-group">
+
+        <p>
+            <input type="hidden" name="Id" class="form-control" value="@Model.Id" />
+
+            <label>Name: </label>
+            <input type="text" name="Name" class="form-control" value="@Model.Name" />
+        </p>
+
+        <p>
+            <label>Address: </label>
+            <input type="text" name="Address" class="form-control" value="@Model.Address" />
+        </p>
+    </div>
+
+        @*@Html.HiddenFor(m => m.Id)*@
+
+        @*@Html.TextBoxFor(model => model.Name, new { @class = "form-control", @placeholder = "Name" })*@
+
+        @*@Html.TextBoxFor(model => model.Address, new { @class = "form-control", @placeholder = "Address" })*@
+
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-success" id="btnSubmit" data-dismiss="modal">Save</button>
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+    </div>
+
+</form>
+
+
+
+<script>
+
+    $(document).ready(function () {
+
+        $("#btnSubmit").click(function () {
+
+            var myformdata = $("#myForm").serialize();
+
+            $.ajax({
+
+                type: "POST",
+                url: "/Customers/EditConfirmed",
+                data: myformdata,
+                success: function () {
+                    $("#myModal1").modal("hide");
+                    GetCustomerList();
+                }
+            })
+        })
+    })
+
+</script>
+

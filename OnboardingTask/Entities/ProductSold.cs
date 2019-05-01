@@ -18,7 +18,8 @@ namespace OnboardingTask.Entities
         public int StoreId { get; set; }
         public Store Store { get; set; }
 
-        public int DateSold { get; set; }
+        public DateTimeOffset? DateSold { get; set; } = DateTimeOffset.UtcNow;
+
         /* Relationship. 
          public ICollection<Product> Products { get; set; }
          */

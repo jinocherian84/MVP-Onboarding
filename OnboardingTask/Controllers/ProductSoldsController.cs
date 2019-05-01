@@ -118,7 +118,7 @@ namespace OnboardingTask.Controllers
         // POST: ProductSolds/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+       // [HttpPost]
         
         public ActionResult EditConfirmed([Bind(Include = "Id,ProductId,CustomerId,StoreId,DateSold")] ProductSold productSold)
         {
@@ -169,11 +169,81 @@ namespace OnboardingTask.Controllers
             base.Dispose(disposing);
         }
 
+        [HttpGet]
+        public ActionResult SalesView()
+        {
+            ProductSold model = new ProductSold();
+            return PartialView("SalesView", model);
+        }
+
+        [HttpPost]
+        public JsonResult SalesView(ProductSold productSold)
+        {
+            db.Database.BeginTransaction();
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    db.Entry(productSold).State = EntityState.Modified;
+                    if (db.SaveChanges() > 0)
+                    {
+                        db.Database.CurrentTransaction.Commit();
+
+                        Response.StatusCode = (int)HttpStatusCode.OK;
+                        return Json(new { Result = "OK" });
+                    }
+                }
+            }
+            catch (Exception oEx)
+            {
+                db.Database.CurrentTransaction.Rollback();
+                Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                return Json(new { Result = "ERROR", Message = oEx.Message });
+            }
+
+            db.Database.CurrentTransaction.Rollback();
+            Response.StatusCode = (int)HttpStatusCode.BadRequest;
+            return Json(new { Result = "ERROR" });
+        }
+
+        public JsonResult GetRecord(int? id)
+        {
+            if (id == null)
+            {
+                return Json(HttpStatusCode.BadRequest);
+            }
+            ProductSold productSold = db.ProductSold.Include(x => x.Product).Include(x => x.Customer).Include(x => x.Store).FirstOrDefault(r => r.Id == id);
+            if (productSold == null)
+            {
+                return Json(HttpStatusCode.NotFound);
+            }
+
+            return Json(productSold, JsonRequestBehavior.AllowGet);
+        }
+
         public JsonResult GetSalesList()
         {
             var productSold = db.ProductSold.Include(p => p.Customer).Include(x => x.Product).Include(y => y.Store);
             List<ProductSold> SaleList = productSold.ToList();
             return Json(SaleList, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult GetCustomerList()
+        {
+            List<Customer> CusList = db.Customer.ToList();
+            return Json(CusList, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult GetProductList()
+        {
+            List<Product> ProdList = db.Product.ToList();
+            return Json(ProdList, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult GetStoreList()
+        {
+            List<Store> StorList = db.Store.ToList();
+            return Json(StorList, JsonRequestBehavior.AllowGet);
         }
     }
 }

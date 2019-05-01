@@ -1,16 +1,12 @@
-﻿@model IEnumerable<OnboardingTask.Entities.ProductSold>
-
-@{
-    ViewBag.Title = "Index";
-}
-
+﻿
 <h2>Sales</h2>
 
 <div class="container" style="margin-top:2%">
     <a href="/ProductSolds/Create" class="btn btn-info">Add New Sale Record</a>
 </div>
+
 <div class="container" style="margin-top:2%">
-    <tr></tr>
+    
     <table class="table" id="mySalesDataTable">
         <thead>
             <tr>
@@ -22,212 +18,275 @@
                 <th>Action (Delete)</th>
 
             </tr>
-        <tbody></tbody>
         </thead>
+        <tbody></tbody>
     </table>
 </div>
 
-<div class="modal fade" id="mySalesModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <a href="#" class="close" data-dismiss="modal">&times;</a>
-                <h3 class="modal-title">Edit Sales Record</h3>
-            </div>
-            <div class="modal-body" id="mySalesModalBody">
-
-            </div>
-            
-        </div>
-
-    </div>
+<div id="divModalContainer">
+    
 
 </div>
 
-<div class="modal fade" id="myModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <a href="#" class="close" data-dismiss="modal">&times;</a>
-                <h3 class="modal-title">Delete Sales Record</h3>
-            </div>
-            <div class="modal-body">
-                <h4>Are you sure ? You want to delete this. </h4>
 
-            </div>
-            <div class="modal-footer">
-                <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
-                <a href="#" class="btn btn-success" onclick="DeleteSalesRecord()">Confirm</a>
+    <div class="modal fade" id="myModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <a href="#" class="close" data-dismiss="modal">&times;</a>
+                    <h3 class="modal-title">Delete Sales Record</h3>
+                </div>
+                <div class="modal-body">
+                    <h4>Are you sure ? You want to delete this. </h4>
+
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+                    <a href="#" class="btn btn-success" onclick="DeleteSalesRecord()">Confirm</a>
+                </div>
+
             </div>
 
         </div>
 
     </div>
 
-</div>
 
-
-@*hidden field for storing current salesId*@
+    @*hidden field for storing current salesId*@
 <input type="hidden" id="hiddenSalesId" />
 
-<script>
-    $(document).ready(function () {
+    <script type="text/javascript">
+        "use strict";
 
-        GetSalesList();
-    })
+        $(document).ready(function () {
 
-    var GetSalesList = function () {
-        $.ajax({
-            type: "GET",
-            url: "/ProductSolds/GetSalesList",
-            success: function (response) {
-                BindDataTable(response);
-            }
-
+            getSaleRecForDisplayTable();
         })
-    }
 
-    var BindDataTable = function (response) {
-        if ($.fn.dataTable.isDataTable('#mySalesDataTable')) {
-            $("#mySalesDataTable").DataTable().destroy();
+        var currentBtnInRow = null;
+
+        function dropdownPopulate(url, idDropdown, dropdownItemHint, strValue, strDisplay, strSelectValue) {
+            //debugger;
+            console.info('dropdownPopulate - strSelectValue : ' + strSelectValue);
+
+            let dropdownObject = $(idDropdown);
+            dropdownObject.empty();
+
+            dropdownObject.append('<option selected="true" disabled>' + dropdownItemHint + '</option>');
+            $.getJSON(url, function (data) {
+                console.info('dropdownPopulate - data: ' + JSON.stringify(data));
+                $.each(data, function (key, entry) {
+                    console.info('dropdownPopulate - each : ' + entry[strValue] + ' - ' + entry[strDisplay])
+                    dropdownObject.append($('<option></option>').attr('value', entry[strValue]).text(entry[strDisplay]));
+                });
+
+                if (strSelectValue) {
+                    //console.info('dropdownPopulate - each : ' + entry[strSelectValue])
+                    dropdownObject.val(strSelectValue);
+                }
+            });
         }
-        //debugger
-        $("#mySalesDataTable").DataTable({
-            data: response,
-            "aoColumns": [
-                { "mData": "Customer.Name" },
-                { "mData": "Product.Name" },
-                { "mData": "Store.Name" },
-                { "mData": "DateSold" },
+        var getSaleRecForDisplay = function (Id, urlForPost) {
+            $.ajax('/ProductSolds/GetRecord/' + Id, {
+                type: 'GET',
+                //async: false,
+                success: function (jsonResponse) {
+                    console.info('getSaleRecForDisplay - jsonResponse: ' + JSON.stringify(jsonResponse));
 
-                {
-                    "mData": "Id",
-                    "render": function (Id, type, full, meta) {
-                        return '<a href="#" class="btn btn-warning" onClick="EditSalesRecord(' + Id + ')"><i class = "glyphicon glyphicon-edit"> Edit</i></a>'
-                    }
-                },
-                {
-                    "mData": "Id",
-                    "render": function (Id, type, full, meta) {
-                        return '<a href="#" id= "row_' + Id + '" class="btn btn-danger" onClick="ConfirmDelete(' + Id + ')"><i class ="glyphicon glyphicon-trash"> Delete</i></a>'
-                    }
+                    dropdownPopulate(
+                        '/ProductSolds/GetCustomerList/',
+                        '#dropdownCustomerId',
+                        'Choose Customer',
+                        'Id',
+                        'Name',
+                        jsonResponse.CustomerId);
+
+                    dropdownPopulate(
+                        '/ProductSolds/GetProductList/',
+                        '#dropdownProductId',
+                        'Choose Product',
+                        'Id',
+                        'Name',
+                        jsonResponse.ProductId);
+
+                    dropdownPopulate(
+                        '/ProductSolds/GetStoreList/',
+                        '#dropdownStoreId',
+                        'Choose Store',
+                        'Id',
+                        'Name',
+                        jsonResponse.StoreId);
+
+
+                    let dateSold = moment(jsonResponse.DateSold, "x").format('MM/DD/YYYY');
+                    console.info('getRecordThenDisplay - dateSold: ' + dateSold);
+
+                    $('#DateSold').val(dateSold);
+
+                    $('#editModalSaveBtn').click(function () {
+                        //event.preventDefault(); //removed default action? yup, confirmed
+                        //console.info('getRecordThenDisplay - editModalSaveBtn on clicked: event.preventDefault()...');
+                        debugger;
+                        //if ($('#myEditForm').valid()) {
+                        if (true) {
+                            $.ajax({
+                                url: urlForPost,
+                                type: 'POST',
+                                data: {
+                                    Id: Id,
+                                    CustomerId: $("#myEditForm").find("#dropdownCustomerId").val(),
+                                    ProductId: $("#myEditForm").find("#dropdownProductId").val(),
+                                    StoreId: $("#myEditForm").find("#dropdownStoreId").val(),
+                                    DateSold: $("#myEditForm").find("#DateSold").val(),
+                                }
+                            }).done(function (data) {
+                                console.info('getRecordThenDisplay - editModalSaveBtn, executing ajax, result data: ' + JSON.stringify(data));
+
+                                if (data.Result == "OK") {
+                                    $("#mySalesModal").modal("hide");
+                                    getSaleRecForDisplayTable();
+                                }
+                                else if (data.Result.Message) {
+                                    alert(data.Result.Message);
+                                }
+
+                                currentBtnInRow = null;
+                            }).fail(function () {
+                                alert("Error: Failed to update record");
+                            });
+                        }
+                        else {
+                            console.info('getRecordThenDisplay - editModalSaveBtn, editModalForm is invalid form');
+                        }
+
+                    });
                 }
-            ]
-        });
-    }
+            })
+        };
 
-</script>
+        var editBtnClick = function (Id, editRowElement) {
+            console.info('editBtnClick - Id: ' + Id);
+            currentBtnInRow = $(editRowElement) // Button that triggered the modal
+            console.info('editBtnClick - currentBtnInRow: ' + JSON.stringify(currentBtnInRow));
+            console.log(currentBtnInRow);
 
-<script>
+            let urlBase = "/ProductSolds/SalesView/";
+            let urlForPost = "/ProductSolds/SalesView/" + Id;
+            $.ajax(urlBase, {
+                type: 'GET',
+                success: function (response, status) {
+                    console.info('editBtnClick - ajax load 1');
+                    //console.info('editBtnClick - response: ' + JSON.stringify(response));
+                    $("#divModalContainer").html(response);
+                    console.info('editBtnClick - status: ' + JSON.stringify(status));
 
-    var EditSalesRecord = function (Id) {
+                    $('#mySalesModal').on('shown.bs.modal', getSaleRecForDisplay(Id, urlForPost));
 
-        var url = "/ProductSolds/EditSales?Id=" + Id;
+                    $("#mySalesModal").modal("show");
 
-        $("#mySalesModalBody").load(url, function () {
-
-            $("#mySalesModal").modal("show");
-
-        })
-
-    }
-</script>
-
-
-<script>
-    var ConfirmDelete = function (Id) {
-
-        $("#hiddenSalesId").val(Id);
-        $("#myModal").modal('show');
-
-    }
-
-    var DeleteSalesRecord = function () {
-
-        var salesId = $("#hiddenSalesId").val();
-
-        $.ajax({
-
-            type: "POST",
-            url: "/ProductSolds/DeleteConfirmed",
-            data: { Id: salesId },
-            success: function (result) {
-                if (result == false) {
-                    alert("Failed to delete Sales Record");
+                    console.info('editBtnClick - ajax load 2');
                 }
-                else {
+            }).fail(function () {
+                alert("Error: Failed to get record!");
+            });
+        }
 
-                    $("#myModal").modal("hide");
-                    GetSalesList();
+        var getSaleRecForDisplayTable = function () {
+            $.ajax({
+                type: "GET",
+                url: "/ProductSolds/GetSalesList",
+                success: function (response) {
+                    BindDataTable(response);
                 }
 
+            })
+        }
+
+        var BindDataTable = function (response) {
+            if ($.fn.dataTable.isDataTable('#mySalesDataTable')) {
+                console.info('BindDataTable - mySalesDataTable exist, destroying...');
+                $("#mySalesDataTable").DataTable().destroy();
+                console.info('BindDataTable - tableDisplay exist, destroyed?');
             }
+            //debugger
+            $("#mySalesDataTable").DataTable({
+                data: response,
+                "aoColumns": [
+                    { "mData": "Customer.Name" },
+                    { "mData": "Product.Name" },
+                    { "mData": "Store.Name" },
+                    {
+                        "mData": "DateSold",
+                        "render": function (data) {
+                            return moment(data, "x").format('MM/DD/YYYY');
+                        }
+                    },
 
-        })
+                    {
+                        "mData": "Id",
+                        "render": function (data, type, row) {
+                            return '<button type="button" class="btn btn-warning" onClick="editBtnClick(' + row.Id + ',this)"><span class = "glyphicon glyphicon-edit"></span>Edit</button>'
+                        }
+                    },
+                    {
+                        "mData": "Id",
+                        "render": function (data, type, row) {
+                            return '<button type="button" class="btn btn-danger" onClick="ConfirmDelete(' + row.Id + ',this)"><span class ="glyphicon glyphicon-trash"></span> Delete</button>'
+                        }
+                    }
+                ]
+            });
+        }
 
-    }
-</script>
+    </script>
+
+    <script>
+
+        var EditSalesRecord = function (Id) {
+
+            var url = "/ProductSolds/EditSales?Id=" + Id;
+
+            $("#mySalesModalBody").load(url, function () {
+
+                $("#mySalesModal").modal("show");
+
+            })
+
+        }
+    </script>
 
 
-@*<p>
-        @Html.ActionLink("Create New", "Create")
-    </p>
-    <table class="table">
-        <tr>
-            <th>
-                Customer Name
-            </th>
-            <th>
-                Product Name
-            </th>
-            <th>
-               Store Name
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DateSold)
-            </th>
-            <th>
-                Action(Edit)
-            </th>
-            <th>
-                Action(Delete)
-            </th>
-            <th></th>
-        </tr>*@
+    <script>
+        var ConfirmDelete = function (Id) {
 
-@*@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Customer.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Product.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Store.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateSold)
-            </td>
-            <td>
-                <span>
-                    <a href="@Url.Action("Edit",new { id = item.Id })" class="btn  btn-warning btn-sm">
-                        <span class="glyphicon glyphicon-edit"></span>
-                        Edit
-                    </a>
-                </span>
+            $("#hiddenSalesId").val(Id);
+            $("#myModal").modal('show');
 
-            </td>
-            <td>
+        }
 
-                <span>
-                    <a href="@Url.Action("Delete",new { id = item.Id })" class="btn  btn-danger btn-sm">
-                        <span class="glyphicon glyphicon-trash"></span>
-                        Delete
-                    </a>
-                </span>
-            </td>
-        </tr>
-    }
+        var DeleteSalesRecord = function () {
 
-    </table>*@
+            var salesId = $("#hiddenSalesId").val();
+
+            $.ajax({
+
+                type: "POST",
+                url: "/ProductSolds/DeleteConfirmed",
+                data: { Id: salesId },
+                success: function (result) {
+                    if (result == false) {
+                        alert("Failed to delete Sales Record");
+                    }
+                    else {
+
+                        $("#myModal").modal("hide");
+                        GetSalesList();
+                    }
+
+                }
+
+            })
+
+        }
+    </script>
+

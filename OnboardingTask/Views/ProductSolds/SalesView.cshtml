@@ -1,0 +1,130 @@
+﻿
+
+<form id="myEditForm">
+    <div class="modal fade" id="mySalesModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <a href="#" class="close" data-dismiss="modal">&times;</a>
+                    <h4 class="modal-title">Edit Sales Record</h4>
+                </div>
+                <div class="modal-body" id="mySalesModalBody">
+                    <div>
+                        <div class="form-group">
+                            <div class="row">
+                                <label class="control-label col-md-3 form-control-static" for="CustomerId">Select Customer</label>
+                                <div class="col-md-9">
+                                    <select class="form-control" id="dropdownCustomerId" name="dropdownCustomerId" data-error="#dropdownCustomerIdError"></select>
+                                    <small><span id="dropdownCustomerIdError" class="text-danger"></span></small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="row">
+                                <label class="control-label col-md-3 form-control-static" for="ProductId">Product Name</label>
+                                <div class="col-md-9">
+                                    <select class="form-control" id="dropdownProductId" name="dropdownProductId" data-error="#dropdownProductIdError"></select>
+                                    @*<span class="errorTxt text-danger"></span>*@
+                                    <small><span id="dropdownProductIdError" class="text-danger"></span></small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="row">
+                                <label class="control-label col-md-3 form-control-static" @*style="background-color:lightcyan;"*@ for="StoreId">Store Name</label>
+                                <div class="col-md-9" @*style="background-color:lightgray;"*@>
+                                    <select class="form-control" id="dropdownStoreId" name="dropdownStoreId" data-error="#dropdownStoreIdError"></select>
+                                    <small><span id="dropdownStoreIdError" class="text-danger"></span></small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="row">
+                                <label class="control-label col-md-3 form-control-static" for="DateSold" @*style="background-color:lightcyan;"*@>Date</label>
+                                <div class="col-md-7" @*style="background-color:lightgray;"*@>
+                                    <div class="input-group date" @*style="background-color:lightgreen;"*@ id="DateSoldGroup">
+                                        <input class="form-control text" id="DateSold" name="DateSold" data-error="#DateSoldError" autocomplete="off">
+                                        <div class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </div>
+                                    </div>
+                                    <small><span id="DateSoldError" class="text-danger"></span></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" id="editModalSaveBtn" data-dismiss="modal">Save</button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</form>
+
+
+<script type="text/javascript" language=javascript>
+    $(document).ready(function () {
+        $('#DateSoldGroup').datepicker({
+            //startDate: "01/01/1900",
+            //endDate: "01/01/2100",
+            format: "mm/dd/yyyy",
+            autoclose: true,
+            todayHighlight: true
+        });
+
+        $.validator.addMethod("regxDate", function (value, element, regexpr) {
+            return regexpr.test(value);
+        });
+
+        $("#myEditForm").validate({
+            rules: {
+                DateSold: {
+                    required: true,
+                    regxDate: /((0[1-9]|1[0-2])\/(0[1-9]|1\d|2\d|3[01])\/(19|20)\d{2}$)/
+                },
+                dropdownCustomerId: {
+                    required: true
+                },
+                dropdownProductId: {
+                    required: true
+                },
+                dropdownStoreId: {
+                    required: true
+                }
+            },
+            messages: {
+                DateSold: {
+                    required: "Please specify Date sold.",
+                    regxDate: "Date should be in mm/dd/YYyy format (where YYyy = 19yy or 20yy)"
+                },
+                dropdownCustomerId: {
+                    required: "Please specify Customer."
+                },
+                dropdownProductId: {
+                    required: "Please specify Product."
+                },
+                dropdownStoreId: {
+                    required: "Please specify Store."
+                }
+            },
+            
+            errorPlacement: function (error, element) {
+                var placement = $(element).data('error');
+                if (placement) {
+                    $(placement).append(error)
+                } else {
+                    error.insertAfter(element);
+                }
+            }
+        })
+    });
+</script>
+
+
+

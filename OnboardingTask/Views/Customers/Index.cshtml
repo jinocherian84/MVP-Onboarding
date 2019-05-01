@@ -24,14 +24,16 @@
     </table>
 </div>
 
-<div class="modal fade" id="myModal1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <a href="#" class="close" data-dismiss="modal">&times;</a>
-                <h3 class="modal-title">Edit Customer</h3>
-            </div>
-            <div class="modal-body" id="myModalBodyDiv1">
+    <div class="modal fade" id="myModal1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <a href="#" class="close" data-dismiss="modal">&times;</a>
+                    <h3 class="modal-title">Edit Customer</h3>
+                </div>
+                <div class="modal-body" id="myModalBodyDiv1">
+
+                </div>
 
             </div>
 
@@ -39,125 +41,125 @@
 
     </div>
 
-</div>
+    <div class="modal fade" id="myModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <a href="#" class="close" data-dismiss="modal">&times;</a>
+                    <h3 class="modal-title">Delete Employee</h3>
+                </div>
+                <div class="modal-body">
+                    <h4>Are you sure ? You want to delete this. </h4>
 
-<div class="modal fade" id="myModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <a href="#" class="close" data-dismiss="modal">&times;</a>
-                <h3 class="modal-title">Delete Employee</h3>
-            </div>
-            <div class="modal-body">
-                <h4>Are you sure ? You want to delete this. </h4>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
+                    <a href="#" class="btn btn-success" onclick="DeleteCustomer()">Confirm</a>
+                </div>
 
-            </div>
-            <div class="modal-footer">
-                <a href="#" class="btn btn-default" data-dismiss="modal">Cancel</a>
-                <a href="#" class="btn btn-success" onclick="DeleteCustomer()">Confirm</a>
             </div>
 
         </div>
 
     </div>
 
-</div>
 
+    @*hidden field for storing current employeeId*@
+    <input type="hidden" id="hiddenCustomerId" />
 
-@*hidden field for storing current employeeId*@
-<input type="hidden" id="hiddenCustomerId" />
+    <script>
+        $(document).ready(function () {
 
-<script>
-    $(document).ready(function () {
-
-        GetCustomerList();
-    })
-
-    var GetCustomerList = function () {
-        $.ajax({
-            type: "GET",
-            url: "/Customers/GetCustomerList",
-            success: function (response) {
-                BindDataTable(response);
-            }
-
+            GetCustomerList();
         })
-    }
 
-    var BindDataTable = function (response) {
-        if ($.fn.dataTable.isDataTable('#myDataTable')) {
-            $("#myDataTable").DataTable().destroy();
+
+        var GetCustomerList = function () {
+            $.ajax({
+                type: "GET",
+                url: "/Customers/GetCustomerList",
+                success: function (response) {
+                    BindDataTable(response);
+                }
+
+            })
         }
 
-        $("#myDataTable").DataTable({
-            data: response,
-            "aoColumns": [
-                { "mData": "Name" },
-                { "mData": "Address" },
-                {
-                    "mData": "Id",
-                    "render": function (Id, type, full, meta) {
-                        return '<a href="#" class="btn btn-warning" onClick="EditCustomer(' + Id + ')"><i class = "glyphicon glyphicon-edit"> Edit</i></a>'
-                    }
-                },
-                {
-                    "mData": "Id",
-                    "render": function (Id, type, full, meta) {
-                        return '<a href="#" id= "row_' + Id + '" class="btn btn-danger" onClick="ConfirmDelete(' + Id + ')"><i class ="glyphicon glyphicon-trash"> Delete</i></a>'
-                    }
-                }
-            ]
-        });
-    }
-
-</script>
-<script>
-
-    var EditCustomer = function (Id) {
-
-        var url = "/Customers/EditCustomer?Id=" + Id;
-
-        $("#myModalBodyDiv1").load(url, function () {
-
-            $("#myModal1").modal("show");
-
-        })
-
-    }
-</script>
-
-
-<script>
-    var ConfirmDelete = function (Id) {
-
-        $("#hiddenCustomerId").val(Id);
-        $("#myModal").modal('show');
-
-    }
-
-    var DeleteCustomer = function () {
-
-        var custId = $("#hiddenCustomerId").val();
-
-        $.ajax({
-
-            type: "POST",
-            url: "/Customers/DeleteConfirmed",
-            data: { Id: custId },
-            success: function (result) {
-                if (result == false) {
-                    alert("Failed to delete Customer");
-                }
-                else {
-
-                    $("#myModal").modal("hide");
-                    GetCustomerList();
-                }
-
+        var BindDataTable = function (response) {
+            if ($.fn.dataTable.isDataTable('#myDataTable')) {
+                $("#myDataTable").DataTable().destroy();
             }
 
-        })
+            $("#myDataTable").DataTable({
+                data: response,
+                "aoColumns": [
+                    { "mData": "Name" },
+                    { "mData": "Address" },
+                    {
+                        "mData": "Id",
+                        "render": function (Id, type, full, meta) {
+                            return '<a href="#" class="btn btn-warning" onClick="EditCustomer(' + Id + ')"><i class = "glyphicon glyphicon-edit"> Edit</i></a>'
+                        }
+                    },
+                    {
+                        "mData": "Id",
+                        "render": function (Id, type, full, meta) {
+                            return '<a href="#" id= "row_' + Id + '" class="btn btn-danger" onClick="ConfirmDelete(' + Id + ')"><i class ="glyphicon glyphicon-trash"> Delete</i></a>'
+                        }
+                    }
+                ]
+            });
+        }
 
-    }
-</script>
+    </script>
+
+    <script>
+
+        var EditCustomer = function (Id) {
+
+            var url = "/Customers/EditCustomer?Id=" + Id;
+
+            $("#myModalBodyDiv1").load(url, function () {
+
+                $("#myModal1").modal("show");
+
+            })
+
+        }
+    </script>
+
+
+    <script>
+        var ConfirmDelete = function (Id) {
+
+            $("#hiddenCustomerId").val(Id);
+            $("#myModal").modal('show');
+
+        }
+
+        var DeleteCustomer = function () {
+
+            var custId = $("#hiddenCustomerId").val();
+
+            $.ajax({
+
+                type: "POST",
+                url: "/Customers/DeleteConfirmed",
+                data: { Id: custId },
+                success: function (result) {
+                    if (result == false) {
+                        alert("Failed to delete Customer");
+                    }
+                    else {
+
+                        $("#myModal").modal("hide");
+                        GetCustomerList();
+                    }
+
+                }
+
+            })
+
+        }
+    </script>
 

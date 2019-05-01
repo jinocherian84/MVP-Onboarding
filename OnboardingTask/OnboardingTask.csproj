@@ -153,6 +153,10 @@
     <Compile Include="Migrations\201902040446298_createDatabase1.Designer.cs">
       <DependentUpon>201902040446298_createDatabase1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201904290312588_createDatabase2.cs" />
+    <Compile Include="Migrations\201904290312588_createDatabase2.Designer.cs">
+      <DependentUpon>201904290312588_createDatabase2.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -182,6 +186,10 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
+    <Content Include="Scripts\moment-with-locales.js" />
+    <Content Include="Scripts\moment-with-locales.min.js" />
+    <Content Include="Scripts\moment.js" />
+    <Content Include="Scripts\moment.min.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -242,6 +250,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201902040446298_createDatabase1.resx">
       <DependentUpon>201902040446298_createDatabase1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904290312588_createDatabase2.resx">
+      <DependentUpon>201904290312588_createDatabase2.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
